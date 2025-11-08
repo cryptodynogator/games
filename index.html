@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Bonanza</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.8); }
+        }
+        .animate-bounce-custom {
+            animation: bounce 0.5s ease-in-out infinite;
+        }
+        .animate-pulse-custom {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .animate-glow {
+            animation: glow 2s ease-in-out infinite;
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f0f;
+            opacity: 0;
+        }
+        .card-flip {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .card-flip.flipped {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-500 to-indigo-700 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="w-full max-w-md mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-white mb-2">Bingo Bonanza</h1>
+            <div class="bg-white rounded-lg p-3 shadow-lg">
+                <div class="flex justify-between items-center">
+                    <div class="text-center">
+                        <p class="text-xs text-gray-500">Balance</p>
+                        <p class="text-xl font-bold text-green-600">$<span id="balance">50</span></p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-xs text-gray-500">Winnings</p>
+                        <p class="text-xl font-bold text-purple-600">$<span id="winnings">0</span></p>
+                    </div>
+                    <button id="withdraw-btn" class="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg font-bold animate-pulse-custom">
+                        Withdraw
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Bingo Card -->
+        <div class="bg-white rounded-xl shadow-2xl p-4 mb-6 relative overflow-hidden">
+            <div class="grid grid-cols-5 gap-2 mb-4">
+                <div class="text-center font-bold text-purple-700 py-2">B</div>
+                <div class="text-center font-bold text-purple-700 py-2">I</div>
+                <div class="text-center font-bold text-purple-700 py-2">N</div>
+                <div class="text-center font-bold text-purple-700 py-2">G</div>
+                <div class="text-center font-bold text-purple-700 py-2">O</div>
+                
+                <!-- Bingo numbers will be generated here -->
+                <div id="bingo-card" class="col-span-5 grid grid-cols-5 gap-2"></div>
+            </div>
+            
+            <!-- Game Controls -->
+            <div class="flex justify-between mt-4">
+                <button id="play-btn" class="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-6 py-3 rounded-lg font-bold flex items-center">
+                    <i class="fas fa-play mr-2"></i> Play Game
+                </button>
+                <button id="auto-play-btn" class="bg-gradient-to-r from-pink-500 to-red-500 text-white px-6 py-3 rounded-lg font-bold flex items-center">
+                    <i class="fas fa-bolt mr-2"></i> Auto Play
+                </button>
+            </div>
+        </div>
+
+        <!-- Recent Wins -->
+        <div class="bg-white rounded-xl shadow-lg p-4 mb-6">
+            <h2 class="text-lg font-bold text-purple-700 mb-2">Recent Wins</h2>
+            <div class="space-y-2">
+                <div class="flex justify-between items-center bg-green-50 p-2 rounded">
+                    <span class="text-sm">User123</span>
+                    <span class="font-bold text-green-600">$25</span>
+                </div>
+                <div class="flex justify-between items-center bg-green-50 p-2 rounded">
+                    <span class="text-sm">LuckyPlayer</span>
+                    <span class="font-bold text-green-600">$50</span>
+                </div>
+                <div class="flex justify-between items-center bg-green-50 p-2 rounded">
+                    <span class="text-sm">BingoMaster</span>
+                    <span class="font-bold text-green-600">$100</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdrawal Modal -->
+    <div id="withdrawal-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-6 mx-4 w-full max-w-md relative animate-glow">
+            <button id="close-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-purple-700 mb-2">Congratulations!</h2>
+                <p class="text-gray-600">You've won <span class="font-bold text-green-600">$<span id="win-amount">0</span></span>!</p>
+            </div>
+            
+            <div class="bg-purple-50 rounded-xl p-4 mb-6">
+                <h3 class="font-bold text-purple-700 mb-2">Withdraw Your Winnings</h3>
+                <p class="text-sm text-gray-600 mb-4">Create a wallet to withdraw your prize and get exclusive bonuses!</p>
+                
+                <a href="https://partner.bybit.com/b/35978" target="_blank" class="block w-full bg-gradient-to-r from-purple-600 to-indigo-700 text-white text-center py-3 rounded-lg font-bold mb-4 animate-pulse-custom">
+                    Create Wallet & Claim Bonus
+                </a>
+                
+                <div class="text-center">
+                    <p class="text-xs text-gray-500">Limited Time Offer</p>
+                </div>
+            </div>
+            
+            <div class="bg-yellow-50 rounded-xl p-4 border border-yellow-200">
+                <h3 class="font-bold text-yellow-700 mb-2 flex items-center">
+                    <i class="fas fa-gift mr-2"></i> New User Exclusive
+                </h3>
+                <p class="text-sm font-bold text-yellow-700 mb-2">Up to $30,050+ in Welcome Rewards</p>
+                <p class="text-xs text-gray-600 mb-3">Grab a $100 sign-up bonus, earn up to $30,000 in deposit bonuses, VIP status upgrades, and more!</p>
+                
+                <div class="space-y-2 max-h-40 overflow-y-auto">
+                    <div class="flex items-center bg-white p-2 rounded border">
+                        <span class="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded mr-2">$50</span>
+                        <span class="text-xs">Deposit $500 & Trade $100k</span>
+                    </div>
+                    <div class="flex items-center bg-white p-2 rounded border">
+                        <span class="bg-orange-100 text-orange-800 text-xs font-bold px-2 py-1 rounded mr-2">Hot</span>
+                        <span class="text-xs">$100 Deposit $3k & Trade $250k</span>
+                    </div>
+                    <div class="flex items-center bg-white p-2 rounded border">
+                        <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded mr-2">$350</span>
+                        <span class="text-xs">Deposit $10k & Trade $900k</span>
+                    </div>
+                    <div class="flex items-center bg-white p-2 rounded border">
+                        <span class="bg-purple-100 text-purple-800 text-xs font-bold px-2 py-1 rounded mr-2">$800</span>
+                        <span class="text-xs">Deposit $50k & Trade $1.5m</span>
+                    </div>
+                    <div class="flex items-center bg-white p-2 rounded border">
+                        <span class="bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded mr-2">$5,000</span>
+                        <span class="text-xs">Deposit $100k & Trade $20m*</span>
+                    </div>
+                </div>
+                
+                <p class="text-xs text-gray-500 mt-3">*Only taker orders will be counted towards trading volume for rewards</p>
+                
+                <div class="mt-4">
+                    <h4 class="font-bold text-purple-700 text-sm mb-2">Upgrade to VIP and enjoy exclusive benefits</h4>
+                    <div class="flex justify-between">
+                        <div class="text-center">
+                            <div class="bg-gradient-to-r from-purple-100 to-indigo-100 rounded-lg p-2">
+                                <p class="text-xs font-bold text-purple-700">VIP 1</p>
+                                <p class="text-xs text-gray-600">Extra Benefits</p>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="bg-gradient-to-r from-purple-100 to-indigo-100 rounded-lg p-2">
+                                <p class="text-xs font-bold text-purple-700">VIP 3</p>
+                                <p class="text-xs text-gray-600">Extra Benefits</p>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="bg-gradient-to-r from-purple-100 to-indigo-100 rounded-lg p-2">
+                                <p class="text-xs font-bold text-purple-700">VIP 5</p>
+                                <p class="text-xs text-gray-600">Extra Benefits</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let balance = 50;
+        let winnings = 0;
+        let bingoCard = [];
+        let markedNumbers = [];
+        let gameActive = false;
+        let autoPlay = false;
+        
+        // DOM elements
+        const balanceEl = document.getElementById('balance');
+        const winningsEl = document.getElementById('winnings');
+        const bingoCardEl = document.getElementById('bingo-card');
+        const playBtn = document.getElementById('play-btn');
+        const autoPlayBtn = document.getElementById('auto-play-btn');
+        const withdrawBtn = document.getElementById('withdraw-btn');
+        const withdrawalModal = document.getElementById('withdrawal-modal');
+        const closeModal = document.getElementById('close-modal');
+        const winAmountEl = document.getElementById('win-amount');
+        
+        // Initialize the game
+        function initGame() {
+            generateBingoCard();
+            updateUI();
+            
+            // Event listeners
+            playBtn.addEventListener('click', playGame);
+            autoPlayBtn.addEventListener('click', toggleAutoPlay);
+            withdrawBtn.addEventListener('click', showWithdrawalModal);
+            closeModal.addEventListener('click', hideWithdrawalModal);
+        }
+        
+        // Generate a bingo card
+        function generateBingoCard() {
+            bingoCardEl.innerHTML = '';
+            bingoCard = [];
+            markedNumbers = [];
+            
+            // Bingo columns with ranges
+            const ranges = [
+                { min: 1, max: 15 },   // B
+                { min: 16, max: 30 },  // I
+                { min: 31, max: 45 },  // N
+                { min: 46, max: 60 },  // G
+                { min: 61, max: 75 }   // O
+            ];
+            
+            // Generate numbers for each column
+            for (let col = 0; col < 5; col++) {
+                const columnNumbers = [];
+                const range = ranges[col];
+                
+                // Generate 5 unique numbers for this column
+                while (columnNumbers.length < 5) {
+                    const num = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+                    if (!columnNumbers.includes(num)) {
+                        columnNumbers.push(num);
+                    }
+                }
+                
+                bingoCard.push(columnNumbers);
+            }
+            
+            // Free space in the center
+            bingoCard[2][2] = 'FREE';
+            
+            // Render the bingo card
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 5; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'bg-gradient-to-br from-purple-100 to-indigo-100 rounded-lg p-2 text-center font-bold text-purple-800 cursor-pointer transition-all duration-300 hover:scale-105';
+                    
+                    // Make the center cell (FREE) look different
+                    if (row === 2 && col === 2) {
+                        cell.className = 'bg-gradient-to-br from-yellow-200 to-yellow-300 rounded-lg p-2 text-center font-bold text-yellow-800';
+                        cell.textContent = 'FREE';
+                        cell.classList.add('marked');
+                    } else {
+                        cell.textContent = bingoCard[col][row];
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+                        
+                        cell.addEventListener('click', () => markNumber(row, col));
+                    }
+                    
+                    bingoCardEl.appendChild(cell);
+                }
+            }
+        }
+        
+        // Mark a number on the bingo card
+        function markNumber(row, col) {
+            if (!gameActive) return;
+            
+            const index = row * 5 + col;
+            const cell = bingoCardEl.children[index];
+            
+            if (cell.classList.contains('marked')) return;
+            
+            // Animation for marking
+            cell.classList.add('marked', 'bg-gradient-to-br', 'from-green-400', 'to-green-500', 'text-white');
+            cell.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                cell.style.transform = 'scale(1)';
+            }, 300);
+            
+            markedNumbers.push({ row, col });
+            
+            // Check for win
+            checkWin();
+        }
+        
+        // Play the game
+        function playGame() {
+            if (gameActive || balance < 5) return;
+            
+            // Deduct play cost
+            balance -= 5;
+            gameActive = true;
+            
+            // Reset marked numbers (except FREE)
+            markedNumbers = [{ row: 2, col: 2 }];
+            
+            // Update UI
+            updateUI();
+            
+            // Simulate game play with random marks
+            simulateGamePlay();
+        }
+        
+        // Simulate game play with random marks
+        function simulateGamePlay() {
+            let marks = 0;
+            const maxMarks = 12; // Enough to usually get a win
+            
+            const markInterval = setInterval(() => {
+                if (marks >= maxMarks || !gameActive) {
+                    clearInterval(markInterval);
+                    
+                    // Check if we have a win
+                    if (!checkWin()) {
+                        // If no win after simulation, force a win (user wins most of the time)
+                        forceWin();
+                    }
+                    
+                    gameActive = false;
+                    
+                    // If auto-play is enabled, play again after a delay
+                    if (autoPlay && balance >= 5) {
+                        setTimeout(playGame, 2000);
+                    }
+                    
+                    return;
+                }
+                
+                // Mark a random unmarked cell
+                const unmarkedCells = [];
+                for (let row = 0; row < 5; row++) {
+                    for (let col = 0; col < 5; col++) {
+                        if (row === 2 && col === 2) continue; // Skip FREE space
+                        
+                        const isMarked = markedNumbers.some(m => m.row === row && m.col === col);
+                        if (!isMarked) {
+                            unmarkedCells.push({ row, col });
+                        }
+                    }
+                }
+                
+                if (unmarkedCells.length > 0) {
+                    const randomCell = unmarkedCells[Math.floor(Math.random() * unmarkedCells.length)];
+                    markNumber(randomCell.row, randomCell.col);
+                    marks++;
+                } else {
+                    clearInterval(markInterval);
+                }
+            }, 500);
+        }
+        
+        // Force a win (user wins most of the time)
+        function forceWin() {
+            // Mark enough cells to create a winning line
+            const lines = [
+                // Rows
+                [{row:0,col:0}, {row:0,col:1}, {row:0,col:2}, {row:0,col:3}, {row:0,col:4}],
+                [{row:1,col:0}, {row:1,col:1}, {row:1,col:2}, {row:1,col:3}, {row:1,col:4}],
+                [{row:2,col:0}, {row:2,col:1}, {row:2,col:2}, {row:2,col:3}, {row:2,col:4}],
+                [{row:3,col:0}, {row:3,col:1}, {row:3,col:2}, {row:3,col:3}, {row:3,col:4}],
+                [{row:4,col:0}, {row:4,col:1}, {row:4,col:2}, {row:4,col:3}, {row:4,col:4}],
+                // Columns
+                [{row:0,col:0}, {row:1,col:0}, {row:2,col:0}, {row:3,col:0}, {row:4,col:0}],
+                [{row:0,col:1}, {row:1,col:1}, {row:2,col:1}, {row:3,col:1}, {row:4,col:1}],
+                [{row:0,col:2}, {row:1,col:2}, {row:2,col:2}, {row:3,col:2}, {row:4,col:2}],
+                [{row:0,col:3}, {row:1,col:3}, {row:2,col:3}, {row:3,col:3}, {row:4,col:3}],
+                [{row:0,col:4}, {row:1,col:4}, {row:2,col:4}, {row:3,col:4}, {row:4,col:4}],
+                // Diagonals
+                [{row:0,col:0}, {row:1,col:1}, {row:2,col:2}, {row:3,col:3}, {row:4,col:4}],
+                [{row:0,col:4}, {row:1,col:3}, {row:2,col:2}, {row:3,col:1}, {row:4,col:0}]
+            ];
+            
+            // Find a line that's almost complete
+            let winningLine = null;
+            for (const line of lines) {
+                const markedCount = line.filter(cell => 
+                    markedNumbers.some(m => m.row === cell.row && m.col === cell.col)
+                ).length;
+                
+                if (markedCount >= 4) {
+                    winningLine = line;
+                    break;
+                }
+            }
+            
+            // If no line is almost complete, pick a random line
+            if (!winningLine) {
+                winningLine = lines[Math.floor(Math.random() * lines.length)];
+            }
+            
+            // Mark the remaining cells in the line
+            for (const cell of winningLine) {
+                const isMarked = markedNumbers.some(m => m.row === cell.row && m.col === cell.col);
+                if (!isMarked) {
+                    markNumber(cell.row, cell.col);
+                }
+            }
+            
+            // Trigger win
+            setTimeout(() => {
+                checkWin();
+            }, 500);
+        }
+        
+        // Check for a win
+        function checkWin() {
+            const lines = [
+                // Rows
+                [{row:0,col:0}, {row:0,col:1}, {row:0,col:2}, {row:0,col:3}, {row:0,col:4}],
+                [{row:1,col:0}, {row:1,col:1}, {row:1,col:2}, {row:1,col:3}, {row:1,col:4}],
+                [{row:2,col:0}, {row:2,col:1}, {row:2,col:2}, {row:2,col:3}, {row:2,col:4}],
+                [{row:3,col:0}, {row:3,col:1}, {row:3,col:2}, {row:3,col:3}, {row:3,col:4}],
+                [{row:4,col:0}, {row:4,col:1}, {row:4,col:2}, {row:4,col:3}, {row:4,col:4}],
+                // Columns
+                [{row:0,col:0}, {row:1,col:0}, {row:2,col:0}, {row:3,col:0}, {row:4,col:0}],
+                [{row:0,col:1}, {row:1,col:1}, {row:2,col:1}, {row:3,col:1}, {row:4,col:1}],
+                [{row:0,col:2}, {row:1,col:2}, {row:2,col:2}, {row:3,col:2}, {row:4,col:2}],
+                [{row:0,col:3}, {row:1,col:3}, {row:2,col:3}, {row:3,col:3}, {row:4,col:3}],
+                [{row:0,col:4}, {row:1,col:4}, {row:2,col:4}, {row:3,col:4}, {row:4,col:4}],
+                // Diagonals
+                [{row:0,col:0}, {row:1,col:1}, {row:2,col:2}, {row:3,col:3}, {row:4,col:4}],
+                [{row:0,col:4}, {row:1,col:3}, {row:2,col:2}, {row:3,col:1}, {row:4,col:0}]
+            ];
+            
+            for (const line of lines) {
+                const isComplete = line.every(cell => 
+                    markedNumbers.some(m => m.row === cell.row && m.col === cell.col)
+                );
+                
+                if (isComplete) {
+                    // Win!
+                    const winAmount = Math.floor(Math.random() * 50) + 10; // $10 to $60
+                    winnings += winAmount;
+                    balance += winAmount;
+                    
+                    // Update UI
+                    updateUI();
+                    
+                    // Show celebration
+                    celebrateWin(winAmount);
+                    
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        // Celebrate win with animations
+        function celebrateWin(amount) {
+            // Create confetti
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confetti.style.animation = `confetti ${Math.random() * 3 + 2}s linear forwards`;
+                document.body.appendChild(confetti);
+                
+                // Remove confetti after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+            
+            // Pulse animation on winnings
+            winningsEl.parentElement.classList.add('animate-bounce-custom');
+            setTimeout(() => {
+                winningsEl.parentElement.classList.remove('animate-bounce-custom');
+            }, 2000);
+            
+            // Show win notification
+            setTimeout(() => {
+                winAmountEl.textContent = amount;
+                showWithdrawalModal();
+            }, 1500);
+        }
+        
+        // Toggle auto-play
+        function toggleAutoPlay() {
+            autoPlay = !autoPlay;
+            
+            if (autoPlay) {
+                autoPlayBtn.innerHTML = '<i class="fas fa-stop mr-2"></i> Stop Auto';
+                autoPlayBtn.classList.remove('bg-gradient-to-r', 'from-pink-500', 'to-red-500');
+                autoPlayBtn.classList.add('bg-gradient-to-r', 'from-red-500', 'to-red-600');
+                
+                // Start auto-play if game is not active
+                if (!gameActive && balance >= 5) {
+                    playGame();
+                }
+            } else {
+                autoPlayBtn.innerHTML = '<i class="fas fa-bolt mr-2"></i> Auto Play';
+                autoPlayBtn.classList.remove('bg-gradient-to-r', 'from-red-500', 'to-red-600');
+                autoPlayBtn.classList.add('bg-gradient-to-r', 'from-pink-500', 'to-red-500');
+            }
+        }
+        
+        // Show withdrawal modal
+        function showWithdrawalModal() {
+            winAmountEl.textContent = winnings;
+            withdrawalModal.classList.remove('hidden');
+        }
+        
+        // Hide withdrawal modal
+        function hideWithdrawalModal() {
+            withdrawalModal.classList.add('hidden');
+        }
+        
+        // Update UI elements
+        function updateUI() {
+            balanceEl.textContent = balance;
+            winningsEl.textContent = winnings;
+            
+            // Update play button state
+            if (balance < 5) {
+                playBtn.disabled = true;
+                playBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                playBtn.disabled = false;
+                playBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+        
+        // Initialize the game when the page loads
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
