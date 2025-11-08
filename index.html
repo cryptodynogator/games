@@ -238,8 +238,8 @@
                 <div id="loginMessage" class="mb-4"></div>
                 
                 <div class="mb-4">
-                    <label for="bybitId" class="block text-gray-300 mb-2">Bybit ID</label>
-                    <input type="text" id="bybitId" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="Enter your Bybit ID">
+                    <label for="email" class="block text-gray-300 mb-2">Email</label>
+                    <input type="email" id="email" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="Enter your email">
                 </div>
                 
                 <div class="mb-6">
@@ -268,8 +268,8 @@
                 </div>
                 
                 <div class="mb-4">
-                    <label for="email" class="block text-gray-300 mb-2">Email</label>
-                    <input type="email" id="email" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="Enter your email">
+                    <label for="regEmail" class="block text-gray-300 mb-2">Email</label>
+                    <input type="email" id="regEmail" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="Enter your email">
                 </div>
                 
                 <div class="mb-6">
@@ -439,9 +439,9 @@
     </div>
 
     <script>
-        // Initialize Supabase
-        const SUPABASE_URL = 'https://rdjupkwgtrwjjysvcbcr.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkanVwa3dndHJ3amp5c3ZjYmNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1NzU0MDUsImV4cCI6MjA3ODE1MTQwNX0.M627Yq2I_NATE9VlfiIT8ww8xh7bMUTesaZ6Vx2tZCw';
+        // Initialize Supabase - REPLACE WITH YOUR ACTUAL SUPABASE CREDENTIALS
+        const SUPABASE_URL = 'https://your-project.supabase.co';
+        const SUPABASE_ANON_KEY = 'your-anon-key';
         
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
@@ -552,29 +552,33 @@
             clearMessage(registerMessage);
         });
         
-        // Login form submission
+        // Login form submission - FIXED VERSION
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const bybitId = document.getElementById('bybitId').value;
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             
-            if (!bybitId || !password) {
-                displayMessage(loginMessage, 'Please enter both Bybit ID and password', 'error');
+            if (!email || !password) {
+                displayMessage(loginMessage, 'Please enter both email and password', 'error');
                 return;
             }
             
             setLoading(loginForm.querySelector('button'), loginSpinner, loginBtnText, true);
             
             try {
+                console.log('Attempting login with:', email);
                 const { data, error } = await supabase.auth.signInWithPassword({
-                    email: bybitId + '@cryptonews.com', // Using Bybit ID as part of email
+                    email: email,
                     password: password
                 });
                 
                 if (error) {
-                    displayMessage(loginMessage, 'Invalid credentials. Please try again.', 'error');
+                    console.error('Login error:', error);
+                    displayMessage(loginMessage, error.message, 'error');
                 } else {
-                    // Store user data
+                    console.log('Login successful:', data);
+                    
+                    // Get user profile data
                     const { data: userData, error: userError } = await supabase
                         .from('users')
                         .select('bybit_id')
@@ -584,7 +588,7 @@
                     if (!userError && userData) {
                         userWelcome.textContent = `Welcome, ${userData.bybit_id}!`;
                     } else {
-                        userWelcome.textContent = `Welcome, ${bybitId}!`;
+                        userWelcome.textContent = `Welcome!`;
                     }
                     
                     hideLoginModal();
@@ -598,11 +602,11 @@
             }
         });
         
-        // Registration form submission
+        // Registration form submission - FIXED VERSION
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             const bybitId = document.getElementById('regBybitId').value;
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('regEmail').value;
             const password = document.getElementById('regPassword').value;
             
             if (!bybitId || !email || !password) {
@@ -618,6 +622,8 @@
             setLoading(registerForm.querySelector('button'), registerSpinner, registerBtnText, true);
             
             try {
+                console.log('Attempting registration with:', { bybitId, email });
+                
                 // First, create the auth user
                 const { data: authData, error: authError } = await supabase.auth.signUp({
                     email: email,
@@ -625,6 +631,7 @@
                 });
                 
                 if (authError) {
+                    console.error('Auth error:', authError);
                     if (authError.message.includes('already registered')) {
                         displayMessage(registerMessage, 'Email already registered. Please use a different email.', 'error');
                     } else {
@@ -633,30 +640,37 @@
                     return;
                 }
                 
-                // Then, store additional user data in the users table
-                const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .insert([
-                        { 
-                            id: authData.user.id,
-                            bybit_id: bybitId,
-                            email: email
-                        }
-                    ])
-                    .select();
+                console.log('Auth created:', authData);
                 
-                if (userError) {
-                    console.error('User data insertion error:', userError);
-                    displayMessage(registerMessage, 'Registration completed but there was an error saving your profile.', 'error');
-                } else {
-                    displayMessage(registerMessage, 'Registration successful! Please check your email to verify your account.', 'success');
+                // Then, store additional user data in the users table
+                if (authData.user) {
+                    const { data: userData, error: userError } = await supabase
+                        .from('users')
+                        .insert([
+                            { 
+                                id: authData.user.id,
+                                bybit_id: bybitId,
+                                email: email
+                            }
+                        ])
+                        .select();
                     
-                    // Switch to login form after successful registration
-                    setTimeout(() => {
-                        registerForm.classList.add('hidden');
-                        loginForm.classList.remove('hidden');
-                        clearMessage(loginMessage);
-                    }, 3000);
+                    if (userError) {
+                        console.error('User data insertion error:', userError);
+                        displayMessage(registerMessage, 'Registration completed but there was an error saving your profile.', 'error');
+                    } else {
+                        console.log('User data saved:', userData);
+                        displayMessage(registerMessage, 'Registration successful! You can now log in.', 'success');
+                        
+                        // Switch to login form after successful registration
+                        setTimeout(() => {
+                            registerForm.classList.add('hidden');
+                            loginForm.classList.remove('hidden');
+                            clearMessage(loginMessage);
+                            // Pre-fill the email for convenience
+                            document.getElementById('email').value = email;
+                        }, 2000);
+                    }
                 }
             } catch (error) {
                 console.error('Registration error:', error);
@@ -677,6 +691,8 @@
             const { data: { session } } = await supabase.auth.getSession();
             
             if (session) {
+                console.log('User already logged in:', session.user);
+                
                 // Get user data
                 const { data: userData, error } = await supabase
                     .from('users')
@@ -703,8 +719,24 @@
         
         // Listen to auth state changes
         supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log('Auth state changed:', event, session);
             if (event === 'SIGNED_OUT') {
                 hideDashboard();
+            } else if (event === 'SIGNED_IN' && session) {
+                // Get user data
+                const { data: userData, error } = await supabase
+                    .from('users')
+                    .select('bybit_id')
+                    .eq('id', session.user.id)
+                    .single();
+                
+                if (!error && userData) {
+                    userWelcome.textContent = `Welcome, ${userData.bybit_id}!`;
+                } else {
+                    userWelcome.textContent = `Welcome!`;
+                }
+                
+                showDashboard();
             }
         });
     </script>
