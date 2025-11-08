@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoNews Pro | Bybit Exclusive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+        }
+        
+        .bybit-gradient {
+            background: linear-gradient(135deg, #000000 0%, #2d2d2d 100%);
+        }
+        
+        .card-gradient {
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            border: 1px solid #333333;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #fcd535 0%, #f0b90b 100%);
+            color: #000000;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(252, 213, 53, 0.2);
+        }
+        
+        .text-gold {
+            color: #fcd535;
+        }
+        
+        .border-gold {
+            border-color: #fcd535;
+        }
+        
+        .glow {
+            box-shadow: 0 0 15px rgba(252, 213, 53, 0.3);
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #fcd535;
+            color: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        
+        .dashboard-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-black border-b border-gray-800 py-4">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <h1 class="text-2xl font-bold text-white">CryptoNews <span class="text-gold">Pro</span></h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="loginBtn" class="btn-primary px-6 py-2 rounded-lg">Login with Bybit</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="py-16 px-4">
+        <div class="container mx-auto text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">Exclusive Crypto Newsletter for <span class="text-gold">Bybit Users</span></h1>
+            <p class="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">Hook your users up with the best deposit rewards on the market! Earn up to $30,100 when you make your first deposit and trade on Bybit.</p>
+            <div class="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4">
+                <button id="heroLoginBtn" class="btn-primary px-8 py-3 rounded-lg text-lg">Login with Bybit ID</button>
+                <a href="https://partner.bybit.com/b/35978" target="_blank" class="bg-transparent border border-gold text-gold px-8 py-3 rounded-lg text-lg hover:bg-gold hover:text-black transition-colors">Get Your Bybit ID</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="py-16 px-4">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-12">How to Get Started</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="card-gradient p-6 rounded-xl">
+                    <div class="flex items-center mb-4">
+                        <div class="step-number">1</div>
+                        <h3 class="text-xl font-bold">Sign up as a new user</h3>
+                    </div>
+                    <p class="text-gray-400">Create your Bybit account using our exclusive link to qualify for the bonus rewards.</p>
+                </div>
+                <div class="card-gradient p-6 rounded-xl">
+                    <div class="flex items-center mb-4">
+                        <div class="step-number">2</div>
+                        <h3 class="text-xl font-bold">Deposit & Trade</h3>
+                    </div>
+                    <p class="text-gray-400">Fulfill the deposit and trading criteria to unlock bonuses within 14 days of registration.</p>
+                </div>
+                <div class="card-gradient p-6 rounded-xl">
+                    <div class="flex items-center mb-4">
+                        <div class="step-number">3</div>
+                        <h3 class="text-xl font-bold">Claim Rewards</h3>
+                    </div>
+                    <p class="text-gray-400">Access the Rewards Hub in your Bybit account to claim your bonuses.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+        <div class="bybit-gradient p-8 rounded-xl max-w-md w-full mx-4 border border-gray-700">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Login with Bybit</h2>
+                <button id="closeModal" class="text-gray-400 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <p class="text-gray-400 mb-6">Access exclusive crypto insights and trading opportunities with your Bybit account.</p>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label for="bybitId" class="block text-sm font-medium text-gray-300 mb-1">Bybit ID</label>
+                    <input type="text" id="bybitId" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-gold" placeholder="Enter your Bybit ID">
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-300 mb-1">Password</label>
+                    <input type="password" id="password" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-gold" placeholder="Enter your password">
+                </div>
+                <button type="submit" class="w-full btn-primary py-3 rounded-lg font-bold">Login</button>
+            </form>
+            <div class="mt-6 text-center">
+                <p class="text-gray-400">Don't have a Bybit account?</p>
+                <a href="https://partner.bybit.com/b/35978" target="_blank" class="text-gold hover:underline">Sign up here to get your Bybit ID</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard (Initially Hidden) -->
+    <div id="dashboard" class="hidden">
+        <!-- Dashboard Header -->
+        <section class="py-8 px-4 border-b border-gray-800">
+            <div class="container mx-auto">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold">Welcome, <span id="userName" class="text-gold">Trader</span></h1>
+                        <p class="text-gray-400">Your exclusive crypto insights and rewards dashboard</p>
+                    </div>
+                    <button id="logoutBtn" class="bg-transparent border border-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">Logout</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Content -->
+        <section class="py-12 px-4">
+            <div class="container mx-auto">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Left Column -->
+                    <div class="lg:col-span-2 space-y-8">
+                        <!-- Rewards Card -->
+                        <div class="card-gradient p-6 rounded-xl dashboard-card">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-2xl font-bold">Your Bybit Rewards</h2>
+                                <span class="bg-gold text-black px-3 py-1 rounded-full text-sm font-bold">Active</span>
+                            </div>
+                            <div class="mb-6">
+                                <p class="text-gray-400 mb-2">Potential Bonus Earnings</p>
+                                <p class="text-4xl font-bold text-gold">$30,100</p>
+                            </div>
+                            <div class="mb-6">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>Progress to next reward tier</span>
+                                    <span>65%</span>
+                                </div>
+                                <div class="w-full bg-gray-700 rounded-full h-2">
+                                    <div class="bg-gold h-2 rounded-full" style="width: 65%"></div>
+                                </div>
+                            </div>
+                            <button class="w-full bg-transparent border border-gold text-gold py-3 rounded-lg font-bold hover:bg-gold hover:text-black transition-colors">Claim Rewards</button>
+                        </div>
+
+                        <!-- News Feed -->
+                        <div class="card-gradient p-6 rounded-xl dashboard-card">
+                            <h2 class="text-2xl font-bold mb-6">Latest Crypto Insights</h2>
+                            <div class="space-y-6">
+                                <div class="border-b border-gray-700 pb-4">
+                                    <h3 class="text-xl font-bold mb-2">Bitcoin Consolidation Phase: What's Next?</h3>
+                                    <p class="text-gray-400 mb-3">Analysts are watching key support levels as BTC enters a critical consolidation phase. Our technical analysis suggests...</p>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-500">2 hours ago</span>
+                                        <button class="text-gold text-sm font-medium">Read More</button>
+                                    </div>
+                                </div>
+                                <div class="border-b border-gray-700 pb-4">
+                                    <h3 class="text-xl font-bold mb-2">Altcoin Season Indicators Flash Green</h3>
+                                    <p class="text-gray-400 mb-3">Multiple metrics suggest we might be entering an altcoin season. Here are the top 5 projects to watch according to our research team.</p>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-500">5 hours ago</span>
+                                        <button class="text-gold text-sm font-medium">Read More</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold mb-2">Bybit Introduces New Perpetual Contracts</h3>
+                                    <p class="text-gray-400 mb-3">Bybit has expanded its derivatives offerings with three new perpetual contracts. Learn how to leverage these new instruments.</p>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-500">1 day ago</span>
+                                        <button class="text-gold text-sm font-medium">Read More</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="space-y-8">
+                        <!-- Account Summary -->
+                        <div class="card-gradient p-6 rounded-xl dashboard-card">
+                            <h2 class="text-2xl font-bold mb-6">Account Summary</h2>
+                            <div class="space-y-4">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Bybit ID</span>
+                                    <span id="displayBybitId" class="font-medium">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Member Since</span>
+                                    <span class="font-medium">March 2023</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Reward Tier</span>
+                                    <span class="font-medium text-gold">Gold</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Newsletter Issues</span>
+                                    <span class="font-medium">24</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="card-gradient p-6 rounded-xl dashboard-card">
+                            <h2 class="text-2xl font-bold mb-6">Quick Actions</h2>
+                            <div class="space-y-4">
+                                <button class="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                                        <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd" />
+                                    </svg>
+                                    Deposit Funds
+                                </button>
+                                <button class="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
+                                    </svg>
+                                    Trade Now
+                                </button>
+                                <button class="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    </svg>
+                                    Support Center
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Referral Program -->
+                        <div class="card-gradient p-6 rounded-xl dashboard-card">
+                            <h2 class="text-2xl font-bold mb-4">Refer & Earn</h2>
+                            <p class="text-gray-400 mb-4">Share your referral link and earn additional rewards when friends sign up and trade.</p>
+                            <div class="flex mb-4">
+                                <input type="text" id="referralLink" class="flex-grow bg-gray-800 border border-gray-700 rounded-l-lg px-4 py-2 text-white text-sm" value="https://partner.bybit.com/b/35978" readonly>
+                                <button id="copyLink" class="bg-gold text-black px-4 py-2 rounded-r-lg font-medium">Copy</button>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-gold font-bold">Earn 20% of your friends' trading fees</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // DOM Elements
+        const loginBtn = document.getElementById('loginBtn');
+        const heroLoginBtn = document.getElementById('heroLoginBtn');
+        const loginModal = document.getElementById('loginModal');
+        const closeModal = document.getElementById('closeModal');
+        const loginForm = document.getElementById('loginForm');
+        const dashboard = document.getElementById('dashboard');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userName = document.getElementById('userName');
+        const displayBybitId = document.getElementById('displayBybitId');
+        const copyLink = document.getElementById('copyLink');
+        const referralLink = document.getElementById('referralLink');
+
+        // Open Login Modal
+        loginBtn.addEventListener('click', () => {
+            loginModal.classList.remove('hidden');
+        });
+
+        heroLoginBtn.addEventListener('click', () => {
+            loginModal.classList.remove('hidden');
+        });
+
+        // Close Login Modal
+        closeModal.addEventListener('click', () => {
+            loginModal.classList.add('hidden');
+        });
+
+        // Handle Login Form Submission
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const bybitId = document.getElementById('bybitId').value;
+            const password = document.getElementById('password').value;
+            
+            // Simple validation
+            if (bybitId.trim() === '' || password.trim() === '') {
+                alert('Please enter both Bybit ID and password');
+                return;
+            }
+            
+            // In a real application, you would authenticate with Bybit API here
+            // For this demo, we'll simulate a successful login
+            
+            // Store user info (in a real app, use secure methods)
+            localStorage.setItem('userLoggedIn', 'true');
+            localStorage.setItem('bybitId', bybitId);
+            
+            // Update UI
+            loginModal.classList.add('hidden');
+            dashboard.classList.remove('hidden');
+            document.querySelector('nav').classList.add('hidden');
+            document.querySelector('section').classList.add('hidden');
+            document.querySelector('section + section').classList.add('hidden');
+            
+            // Display user info
+            displayBybitId.textContent = bybitId;
+            userName.textContent = bybitId;
+        });
+
+        // Handle Logout
+        logoutBtn.addEventListener('click', () => {
+            // Clear stored data
+            localStorage.removeItem('userLoggedIn');
+            localStorage.removeItem('bybitId');
+            
+            // Reset UI
+            dashboard.classList.add('hidden');
+            document.querySelector('nav').classList.remove('hidden');
+            document.querySelector('section').classList.remove('hidden');
+            document.querySelector('section + section').classList.remove('hidden');
+            
+            // Reset form
+            loginForm.reset();
+        });
+
+        // Copy Referral Link
+        copyLink.addEventListener('click', () => {
+            referralLink.select();
+            document.execCommand('copy');
+            
+            // Visual feedback
+            const originalText = copyLink.textContent;
+            copyLink.textContent = 'Copied!';
+            copyLink.classList.add('bg-green-500');
+            
+            setTimeout(() => {
+                copyLink.textContent = originalText;
+                copyLink.classList.remove('bg-green-500');
+            }, 2000);
+        });
+
+        // Check if user is already logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const isLoggedIn = localStorage.getItem('userLoggedIn');
+            const storedBybitId = localStorage.getItem('bybitId');
+            
+            if (isLoggedIn === 'true' && storedBybitId) {
+                dashboard.classList.remove('hidden');
+                document.querySelector('nav').classList.add('hidden');
+                document.querySelector('section').classList.add('hidden');
+                document.querySelector('section + section').classList.add('hidden');
+                
+                displayBybitId.textContent = storedBybitId;
+                userName.textContent = storedBybitId;
+            }
+        });
+    </script>
+</body>
+</html>
